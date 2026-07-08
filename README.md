@@ -8,6 +8,35 @@ re-reads), the Claude token/cost playbook, plus a CI required check, PR template
 Everything is generic and templated with `{{PLACEHOLDER}}` tokens — no org- or project-specific
 references.
 
+## Why it helps
+
+The payoff is that decisions get made once and then enforced by machines, not re-argued in every PR.
+Concretely:
+
+- **Bad code can't reach prod.** Staging-first branch discipline + a promotion gate + branch
+  protection mean `main` only moves through a workflow that a passing CI check gates. No hand-merges,
+  no force-pushes, no "works on my machine" promotions.
+- **Regressions stay fixed.** The test policy (no feature without a test, no bug fix without a
+  regression test, same PR) turns every fix into a permanent guard instead of a fix that quietly
+  breaks again three months later.
+- **Docs never drift.** The docs-in-the-same-change contract + a canonical `SYSTEM.md` mean the
+  architecture explainer is trustworthy — so humans and agents onboard from docs instead of reverse-
+  engineering the code every time.
+- **Agents cost less and hallucinate less.** The token/cost playbook (right-sized model tier, a
+  hot-files cheat-sheet, subagent delegation, terse mode) cuts spend on a long-running repo daily,
+  and a shorter context means fewer wrong turns.
+- **New contributors (and their agents) start configured.** A committed `.claude/settings.json` +
+  `CLAUDE.md` travel with the repo, so everyone's first session runs with the same model, plugins,
+  hooks, and rules — zero setup drift across a team.
+- **Norms have teeth.** Anything expressible as a lint rule or required check becomes one, so
+  violations fail CI instead of relying on a reviewer to notice. Human review is reserved for the
+  judgment calls a machine can't make.
+- **Features ship on rails.** The BRD/spec process (grill → spec → approve → build test-first →
+  verify → done) forces the hard decisions up front and makes "done" mean done — status is literally
+  the folder the spec lives in.
+- **Zero lock-in.** Everything is `{{PLACEHOLDER}}`-tokenized and section-optional — delete what
+  doesn't apply (no design system, single-branch repo) and the rest still stands.
+
 ## Install
 
 Clone (or copy) this repo into your Claude Code skills directory as `init-norms`:
