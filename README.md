@@ -52,43 +52,13 @@ Four everyday habits quietly run the meter up. This skill installs the counter-h
 |---|---|---|
 | **Re-reading big files.** An agent re-opens the same 800-line module (~10k tokens) to answer "what does this export?" — 30×/week = ~300k tokens on *one* file. | `docs/HOT-FILES.md` cheat-sheet + a canonical `SYSTEM.md`: agents read a ~40-line map (~600 tokens) instead of the file. | ~**94%** fewer tokens on those lookups (600 vs 10k per read). |
 | **Top-tier model on routine turns.** Running the most expensive model for `git status`, a one-line edit, or a lookup. | `.claude/settings.json` pins a **mid-tier** default (Sonnet); you escalate to the top tier (Opus) per-session only for architecture, design, and hard debugging — not routine coding. | Mid tier is ~**5× cheaper per token** than top tier — so routine turns cost ~1/5. |
-| **Verbose output.** Chatty prose burns output tokens (the 5×-priced side) with no added correctness. | The token/cost playbook points at a terse-output mode (e.g. the caveman plugin) for chatty turns. | ~**75%** fewer *output* tokens on those turns (technical content unchanged). |
+| **Verbose output.** Chatty prose burns output tokens (the 5×-priced side) with no added correctness. | The token/cost playbook points at a terse-output mode (e.g. the [caveman](https://github.com/JuliusBrussee/caveman) plugin) for chatty turns. | ~**75%** fewer *output* tokens on those turns (technical content unchanged). |
 | **Wide reads bloat the main thread.** Sweeping 40 files (~400k tokens) to answer one question leaves all 400k in context, inflating every later turn. | The playbook delegates wide reads to a **subagent** that returns just the ~500-token conclusion. | Main-thread context stays lean; the 400k never compounds across the rest of the session. |
 
 *\*Illustrative order-of-magnitude estimates, not a benchmark — real savings depend on repo size,
 file sizes, and how you work. The point is the **mechanism** and that these habits **compound**: a
 long-running repo pays for them every single day.* The full playbook lives in §9 of the generated
 `CLAUDE.md`.
-
-## Advanced usage: large codebases
-
-On a big repo (or a monorepo), two habits dominate the bill: **re-reading source** and **dumping raw
-command output**. The companion skill **`init-norms-scale`** installs the counter-habit for each. Both
-lean on optional, user-installed tools — swap in any equivalent; keep the norm.
-
-- **Query a code-graph instead of re-reading files.** Build a persistent knowledge graph of the repo
-  once, rebuild it incrementally on a SessionStart hook, then answer "how does X work / what calls Y"
-  by *querying the graph* — not by opening thousands of lines each session. The graph's most-connected
-  "god nodes" also seed `docs/HOT-FILES.md` with the repo's real hot files.
-  (`graphify` is one such tool; the norm is what matters, not the tool.)
-- **Compress high-volume browsing output.** Wrap noisy, low-stakes commands (`git log`, `ls`, dep
-  installs, long greps) in an output-compressing CLI proxy so they return a fraction of the tokens.
-  Because such proxies are **lossy** (truncate / dedup / group), the rule is strict: **browsing only —
-  NEVER wrap diagnostics** (tests, migrations, deploys, stack traces, `git diff`/`git status` before a
-  commit), and never a global auto-rewrite hook. A lossy filter can eat the one line that is the
-  signal. ([rtk](https://github.com/rtk-ai/rtk), the Rust Token Killer, is one such tool.)
-
-Why it compounds at scale: a 2k-line core module is ~25k tokens; reopened a few times a day across a
-team, that's millions of tokens a week re-deriving what a graph query answers in a few hundred. The
-graph pays back its build cost within a day.
-
-Install the advanced skill the same way as init-norms (it's a sibling folder in this repo):
-```
-git clone https://github.com/sanjeevnair/claude-init-norms /tmp/claude-init-norms
-cp -r /tmp/claude-init-norms/init-norms-scale ~/.claude/skills/init-norms-scale   # or copy on Windows
-```
-Then, in a repo already set up with init-norms: *"Use init-norms-scale to add the large-codebase
-tooling."*
 
 ## Install
 
@@ -113,7 +83,9 @@ git clone https://github.com/sanjeevnair/claude-init-norms "<repo>\.claude\skill
 ```
 
 The skill name is `init-norms` (from `SKILL.md`), so the destination folder must be named `init-norms`.
-Update it later with `git -C ~/.claude/skills/init-norms pull` (`$HOME\.claude\...` on Windows).
+Update it later with:
+- macOS/Linux: `git -C ~/.claude/skills/init-norms pull`
+- Windows: `git -C "$HOME\.claude\skills\init-norms" pull`
 
 ## Use
 
@@ -124,6 +96,59 @@ In any repo, ask Claude Code:
 Claude runs the scaffolder (never overwrites existing files), fills placeholders from the repo, asks
 you for the few unknowns (`{{ORG}}`/`{{TEAM}}`, your branch model, promote command if any), wires a
 `verify` script, and lists the manual GitHub steps (create the team, set branch protection).
+
+## Advanced usage: large codebases
+
+On a big repo (or a monorepo), two habits dominate the bill: **re-reading source** and **dumping raw
+command output**. The companion skill **`init-norms-scale`** installs the counter-habit for each. Both
+lean on optional, user-installed tools — swap in any equivalent; keep the norm.
+
+- **Query a code-graph instead of re-reading files.** Build a persistent knowledge graph of the repo
+  once, rebuild it incrementally on a SessionStart hook, then answer "how does X work / what calls Y"
+  by *querying the graph* — not by opening thousands of lines each session. The graph's most-connected
+  "god nodes" also seed `docs/HOT-FILES.md` with the repo's real hot files.
+  ([graphify](https://pypi.org/project/graphifyy/) is one such tool; the norm is what matters, not the tool.)
+- **Compress high-volume browsing output.** Wrap noisy, low-stakes commands (`git log`, `ls`, dep
+  installs, long greps) in an output-compressing CLI proxy so they return a fraction of the tokens.
+  Because such proxies are **lossy** (truncate / dedup / group), the rule is strict: **browsing only —
+  NEVER wrap diagnostics** (tests, migrations, deploys, stack traces, `git diff`/`git status` before a
+  commit), and never a global auto-rewrite hook. A lossy filter can eat the one line that is the
+  signal. ([rtk](https://github.com/rtk-ai/rtk), the Rust Token Killer, is one such tool.)
+
+Why it compounds at scale: a 2k-line core module is ~25k tokens; reopened a few times a day across a
+team, that's millions of tokens a week re-deriving what a graph query answers in a few hundred. The
+graph pays back its build cost within a day.
+
+### Step 1 — install the optional tools you'll use
+
+`init-norms-scale` wires these in, but doesn't ship them — install whichever levers you want (skip the
+rest; the setup self-guards if a tool is absent):
+
+| Tool | What it does | Install | Link |
+|---|---|---|---|
+| **graphify** | Builds the code-graph you query instead of re-reading files. Command is `graphify`; the pip package is `graphifyy`. | `uv tool install graphifyy` — or `pip install graphifyy` (works on macOS/Linux/Windows) | [PyPI](https://pypi.org/project/graphifyy/) |
+| **rtk** | Compresses high-volume browsing output (Rust Token Killer). | macOS/Linux: `brew install rtk`. Windows: grab a release binary from the repo. | [GitHub](https://github.com/rtk-ai/rtk) |
+
+### Step 2 — install the companion skill
+
+It's a sibling folder in this repo, so once init-norms is installed you just copy the subfolder up
+into its own skill directory (skills can't be nested):
+
+macOS / Linux / WSL / Git Bash:
+```
+cp -r ~/.claude/skills/init-norms/init-norms-scale ~/.claude/skills/init-norms-scale
+```
+Windows (PowerShell):
+```powershell
+Copy-Item -Recurse "$HOME\.claude\skills\init-norms\init-norms-scale" "$HOME\.claude\skills\init-norms-scale"
+```
+
+### Step 3 — run it
+
+In a repo already set up with init-norms: *"Use init-norms-scale to add the large-codebase tooling."*
+It detects which tools you installed, merges a self-guarding graphify SessionStart hook into
+`.claude/settings.json`, seeds `docs/HOT-FILES.md` from the graph, and appends the rtk/graph rules to
+`CLAUDE.md`.
 
 ## Layout
 ```

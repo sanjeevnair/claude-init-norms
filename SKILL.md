@@ -30,13 +30,18 @@ macOS / Linux / WSL / Git Bash:
 ```
 bash scripts/setup.sh <REPO_ROOT>
 ```
-Windows (PowerShell 7+ `pwsh`, or Windows PowerShell 5.1):
+Windows — PowerShell 7+ (`pwsh`):
 ```
-pwsh scripts/setup.ps1 <REPO_ROOT>
+pwsh -File scripts\setup.ps1 <REPO_ROOT>
 ```
-Both scripts do the same thing (identical copy list, no-overwrite, same NEXT steps). Pick by the
-user's shell — check the environment platform. If a target file already exists, the script skips it
-and reports — reconcile by hand rather than clobbering.
+Windows — built-in Windows PowerShell 5.1 (no `pwsh` installed):
+```
+powershell -ExecutionPolicy Bypass -File scripts\setup.ps1 <REPO_ROOT>
+```
+`-ExecutionPolicy Bypass` avoids a "running scripts is disabled" block on machines with a restrictive
+policy; it applies to this one invocation only. Both scripts do the same thing (identical copy list,
+no-overwrite, same NEXT steps). Pick by the user's shell — check the environment platform. If a target
+file already exists, the script skips it and reports — reconcile by hand rather than clobbering.
 
 ### 2. Fill placeholders
 Replace every `{{PLACEHOLDER}}` across `CLAUDE.md`, `.github/*`, and `docs/*`:

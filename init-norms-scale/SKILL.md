@@ -41,12 +41,18 @@ Do these in order. Infer what you can; ask only for genuine forks.
 
 ### 1. Preconditions
 - Confirm base norms exist (a `CLAUDE.md` from init-norms). If not, run `init-norms` first.
-- Detect the tools:
+- Detect the tools (Windows: `where.exe graphify` / `where.exe rtk`):
   ```
   command -v graphify   # code-graph tool
   command -v rtk        # output-compressing proxy
   ```
-  For any that's missing: tell the user where to get it and mark that lever **skipped** (don't fake it).
+  For any that's missing, tell the user how to install it (below) and mark that lever **skipped** until
+  they do — don't fake it, and don't wire a hook for a tool that isn't there:
+  - **graphify** — `uv tool install graphifyy` or `pip install graphifyy` (package is `graphifyy`,
+    command is `graphify`). https://pypi.org/project/graphifyy/
+  - **rtk** — macOS/Linux `brew install rtk`; Windows: a release binary from
+    https://github.com/rtk-ai/rtk
+  Both are optional and independent — install either, both, or neither.
 
 ### 2. Merge the graphify SessionStart hook
 Merge `templates/settings.graphify-hook.json` into the repo's `.claude/settings.json` (deep-merge the

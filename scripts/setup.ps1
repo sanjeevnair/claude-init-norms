@@ -20,7 +20,9 @@ $ErrorActionPreference = 'Stop'
 # ── 1. SETTINGS ──────────────────────────────────────────────────────────────
 # ScriptDir = folder this script lives in. Src = the templates/ next to it.
 # Dest = target repo (the -Target arg, or the current directory if none given).
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+# $PSScriptRoot is the script's own directory (PowerShell 3+); robust across pwsh
+# and Windows PowerShell 5.1, and correct even when invoked with a relative path.
+$ScriptDir = $PSScriptRoot
 # Two-arg Join-Path for Windows PowerShell 5.1 compatibility (3-arg needs PS 6+).
 $Src  = Join-Path (Join-Path $ScriptDir '..') 'templates'
 $Dest = $Target
