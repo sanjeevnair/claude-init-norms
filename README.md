@@ -43,8 +43,9 @@ Concretely:
 
 ## Install
 
-Clone (or copy) this repo into your Claude Code skills directory as `init-norms`:
+Clone (or copy) this repo into your Claude Code skills directory as `init-norms`.
 
+macOS / Linux / WSL / Git Bash:
 ```
 # personal (all your projects)
 git clone https://github.com/sanjeevnair/claude-init-norms ~/.claude/skills/init-norms
@@ -53,8 +54,17 @@ git clone https://github.com/sanjeevnair/claude-init-norms ~/.claude/skills/init
 git clone https://github.com/sanjeevnair/claude-init-norms <repo>/.claude/skills/init-norms
 ```
 
+Windows (PowerShell):
+```powershell
+# personal (all your projects)
+git clone https://github.com/sanjeevnair/claude-init-norms "$HOME\.claude\skills\init-norms"
+
+# or per-project (shared with the team via the repo)
+git clone https://github.com/sanjeevnair/claude-init-norms "<repo>\.claude\skills\init-norms"
+```
+
 The skill name is `init-norms` (from `SKILL.md`), so the destination folder must be named `init-norms`.
-Update it later with `git -C ~/.claude/skills/init-norms pull`.
+Update it later with `git -C ~/.claude/skills/init-norms pull` (`$HOME\.claude\...` on Windows).
 
 ## Use
 
@@ -71,7 +81,8 @@ you for the few unknowns (`{{ORG}}`/`{{TEAM}}`, your branch model, promote comma
 SKILL.md            ← skill entry point (how the agent runs it)
 README.md           ← this file
 LICENSE             ← MIT
-scripts/setup.sh    ← safe scaffolder (no overwrite)
+scripts/setup.sh    ← safe scaffolder, macOS/Linux/WSL/Git Bash (no overwrite)
+scripts/setup.ps1   ← safe scaffolder, Windows PowerShell (identical behavior)
 templates/          ← everything it drops into a repo, all {{PLACEHOLDER}}-tokenized
 ```
 

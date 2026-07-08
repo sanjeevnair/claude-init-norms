@@ -25,11 +25,18 @@ All templates live in `templates/` next to this file and use `{{PLACEHOLDER}}` t
 Do these in order. Infer what you can from the repo; ask the user only for genuine forks.
 
 ### 1. Scaffold (never overwrites existing files)
+
+macOS / Linux / WSL / Git Bash:
 ```
 bash scripts/setup.sh <REPO_ROOT>
 ```
-If a target file already exists, the script skips it and reports — reconcile by hand rather than
-clobbering.
+Windows (PowerShell 7+ `pwsh`, or Windows PowerShell 5.1):
+```
+pwsh scripts/setup.ps1 <REPO_ROOT>
+```
+Both scripts do the same thing (identical copy list, no-overwrite, same NEXT steps). Pick by the
+user's shell — check the environment platform. If a target file already exists, the script skips it
+and reports — reconcile by hand rather than clobbering.
 
 ### 2. Fill placeholders
 Replace every `{{PLACEHOLDER}}` across `CLAUDE.md`, `.github/*`, and `docs/*`:
