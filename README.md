@@ -41,6 +41,25 @@ Concretely:
 - **Zero lock-in.** Everything is `{{PLACEHOLDER}}`-tokenized and section-optional — delete what
   doesn't apply (no design system, single-branch repo, no promotion workflow) and the rest still stands.
 
+## Token & cost: the problem, and what this cuts
+
+When you run coding agents on a repo all day, the bill is driven by **tokens** — the chunks of text
+the model reads (input) and writes (output). ([What's a token?](https://platform.openai.com/tokenizer)
+Output tokens are the pricey side — with current Claude tiers, roughly **5× the price of input**.)
+Four everyday habits quietly run the meter up. This skill installs the counter-habit for each:
+
+| The challenge (what runs the meter up) | What init-norms installs | Rough saving on the affected work* |
+|---|---|---|
+| **Re-reading big files.** An agent re-opens the same 800-line module (~10k tokens) to answer "what does this export?" — 30×/week = ~300k tokens on *one* file. | `docs/HOT-FILES.md` cheat-sheet + a canonical `SYSTEM.md`: agents read a ~40-line map (~600 tokens) instead of the file. | ~**94%** fewer tokens on those lookups (600 vs 10k per read). |
+| **Top-tier model on routine turns.** Running the most expensive model for `git status`, a one-line edit, or a lookup. | `.claude/settings.json` pins a **mid-tier** default; you escalate per-session only for hard work. | Mid tier is ~**5× cheaper per token** than top tier — so routine turns cost ~1/5. |
+| **Verbose output.** Chatty prose burns output tokens (the 5×-priced side) with no added correctness. | The token/cost playbook points at a terse-output mode (e.g. the caveman plugin) for chatty turns. | ~**75%** fewer *output* tokens on those turns (technical content unchanged). |
+| **Wide reads bloat the main thread.** Sweeping 40 files (~400k tokens) to answer one question leaves all 400k in context, inflating every later turn. | The playbook delegates wide reads to a **subagent** that returns just the ~500-token conclusion. | Main-thread context stays lean; the 400k never compounds across the rest of the session. |
+
+*\*Illustrative order-of-magnitude estimates, not a benchmark — real savings depend on repo size,
+file sizes, and how you work. The point is the **mechanism** and that these habits **compound**: a
+long-running repo pays for them every single day.* The full playbook lives in §9 of the generated
+`CLAUDE.md`.
+
 ## Install
 
 Clone (or copy) this repo into your Claude Code skills directory as `init-norms`.
@@ -85,6 +104,29 @@ scripts/setup.sh    ← safe scaffolder, macOS/Linux/WSL/Git Bash (no overwrite)
 scripts/setup.ps1   ← safe scaffolder, Windows PowerShell (identical behavior)
 templates/          ← everything it drops into a repo, all {{PLACEHOLDER}}-tokenized
 ```
+
+## Unfamiliar with a term?
+
+This skill leans on standard software-delivery vocabulary. If any of it is new, here are neutral,
+vendor-generic explainers:
+
+| Term | In one line | Learn more |
+|---|---|---|
+| **SDLC** | Software Development Life Cycle — the stages code goes through from idea to production. | [Wikipedia](https://en.wikipedia.org/wiki/Systems_development_life_cycle) |
+| **CI (continuous integration)** | Automatically build + test every change so breakage is caught early. | [GitHub docs](https://docs.github.com/en/actions/automating-builds-and-tests/about-continuous-integration) |
+| **Pull request (PR)** | A proposed change others review before it merges. | [GitHub docs](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) |
+| **Branch protection** | Rules that stop direct/force pushes to a branch and require review + passing CI. | [GitHub docs](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches) |
+| **CODEOWNERS** | A file listing who must review changes to given paths. | [GitHub docs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) |
+| **Release / staging environment** | Staging is a prod-like environment to verify a change before it goes live. | [Wikipedia](https://en.wikipedia.org/wiki/Deployment_environment) |
+| **Trunk-based vs feature-branch** | Two common branching models; init-norms works with either. | [Trunk-based](https://trunkbaseddevelopment.com/) · [Feature-branch](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow) |
+| **Linting** | Automated checks for style/mistakes; house rules can be encoded as lint rules that fail CI. | [Wikipedia](https://en.wikipedia.org/wiki/Lint_(software)) |
+| **Unit / integration / e2e tests** | The "test pyramid" — narrow fast tests up to broad real-flow ones. | [Fowler](https://martinfowler.com/articles/practical-test-pyramid.html) |
+| **Regression test** | A test that proves a fixed bug stays fixed. | [Wikipedia](https://en.wikipedia.org/wiki/Regression_testing) |
+| **BRD / spec** | Business Requirements Document — writes down what a feature must do before you build it. | [Requirements doc](https://en.wikipedia.org/wiki/Product_requirements_document) |
+| **Definition of Done** | The agreed checklist a change must meet before it counts as "done". | [Scrum.org](https://www.scrum.org/resources/what-definition-done) |
+| **Responsive design** | UI that renders correctly at every screen width. | [MDN](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Responsive_Design) |
+| **Design tokens / design system** | One source of truth for colors/spacing so code never hard-codes raw values. | [Material 3](https://m3.material.io/foundations/design-tokens/overview) |
+| **Token (LLM)** | The unit of text a model reads/writes; you're billed per token. | [Anthropic pricing](https://www.anthropic.com/pricing) |
 
 ## Principle
 If a norm matters, make CI fail when it's broken. A lint rule or a required check beats a doc line.
