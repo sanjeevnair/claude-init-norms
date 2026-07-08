@@ -1,0 +1,22 @@
+# Generic CI gate. Rename {{PACKAGE_MANAGER}} / {{VERIFY_SCRIPT}} to your stack.
+# The whole point: the same command a dev runs locally is the required PR check.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [{{PROD_BRANCH}}]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # cache: '{{PACKAGE_MANAGER}}'   # npm | pnpm | yarn
+      # - uses: pnpm/action-setup@v4        # if pnpm
+      - run: {{PACKAGE_MANAGER}} install --frozen-lockfile
+      # {{VERIFY_SCRIPT}} = typecheck + lint + test + build, e.g. "pnpm verify"
+      - run: {{PACKAGE_MANAGER}} run verify

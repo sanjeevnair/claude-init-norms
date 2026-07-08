@@ -1,0 +1,164 @@
+<!--
+GENERIC CLAUDE.md TEMPLATE
+Copy into a repo root as CLAUDE.md, fill every {{PLACEHOLDER}}, delete sections that
+don't apply. This encodes SDLC norms + Claude token/cost practices distilled from a
+real shipped project. It is the CONTRACT every human and agent on the repo follows.
+Keep it short enough that people actually read it; link out to docs/ for detail.
+-->
+
+# {{PROJECT_NAME}} — CLAUDE.md
+
+## Project
+
+{{One paragraph: what it is, who it's for, the core value.}}
+**Status:** {{built? live? what's shipped, what's gated, what's next — one line.}}
+**How it works:** [docs/SYSTEM.md](docs/SYSTEM.md) is the canonical actor/flow/data explainer.
+**Update it in the same change** as any feature touching an actor, route, data store, external
+service, or flow — docs must never drift from code (enforced in Definition of Done).
+
+---
+
+## 1. Branch discipline — {{DEV_BRANCH}}-first (non-negotiable)
+
+**All development starts on `{{DEV_BRANCH}}`. Always.** `{{PROD_BRANCH}}` is production, changed
+ONLY by the promotion workflow — never hand-merged, never force-pushed.
+
+For ANY code change:
+1. Start on `{{DEV_BRANCH}}` (`git checkout {{DEV_BRANCH}} && git pull`).
+2. Commit + push → auto-deploys to staging + CI runs. Verify on the deployed staging URL.
+3. Promote to prod only via the workflow (`{{PROMOTE_COMMAND}}`) — and only after the promotion gate passes.
+4. Env-divergent config (`{{CONFIG_FILE}}`) is per-branch by design; never merge it across branches.
+
+Only exception: a docs-only change may be mirrored to both branches directly.
+
+## 2. Promotion gate (non-negotiable)
+
+Mock-green ≠ works. Before promoting, every feature that changes user-facing behavior needs BOTH:
+1. **An integration/e2e test** driving the real flow against a real (emulated) backend — real writes, real session, real handlers.
+2. **A real proof on the DEPLOYED staging env** — drive the actual flow on the live commit and confirm the *observable* outcome (row written, page rendered, email delivered). Don't infer from unit-green.
+
+State the staging proof (what you drove + observed) before promoting. Genuinely-unreachable paths
+(admin SSO, real-inbox clicks) → cover with the e2e and say so; never silently skip.
+
+## 3. Testing policy
+
+**No feature without a test. No bug fix without a regression test.** Same PR, always.
+- Feature → test asserting the new behavior.
+- Bug fix → a test that FAILS before the fix and PASSES after (prove it).
+- Pure data/config → assert the shape/routing relied on.
+- Server code hitting a datastore → mock the boundary; don't call live services.
+- Integration/funnel flows → prefer a real-backend e2e; mock-heavy unit tests hide integration bugs.
+- Genuinely untestable → say so explicitly and why; don't silently skip.
+
+**Local gate = CI gate.** One command (`{{VERIFY_COMMAND}}` = typecheck + lint + test + build)
+reproduces CI. Nothing merges that doesn't pass it.
+
+## 4. Feature process (substantial work)
+
+No code on a substantial feature before an approved spec. Trivial fixes (copy, styling, one-line
+bug + its regression test, dep bumps, docs) skip the spec but still need a test when behavior changes.
+
+1. **Intake + grilling** — interrogate every branch of the decision tree; resolve real forks with
+   the user (don't guess decisions the user owns). Mandatory even when they're in a hurry.
+2. **Write the spec** (`docs/features/proposed/FEAT-00X-slug/`), log locked decisions + rejected
+   options. Flag cross-cutting work (touches another feature's data/auth, new dependency, new contract)
+   and complete a design/integration-contract gate before any code.
+3. **Approval**, then build **test-first** (red → green → refactor).
+4. **Verify** locally + exercise the real flow, commit staging-first.
+5. **Definition of Done** before "complete": tests pass, docs updated, staging proof stated.
+
+**Status = the folder.** `proposed/ → building/ → shipped/ (→ archived/)`. Spec is source of
+truth; the roadmap is just the dashboard.
+
+## 5. Design system — build from primitives, never raw values
+
+- **One primitive per need** (one Button, one Card…). Never add a second component that does the
+  same job; extend the variant instead.
+- **No raw hex / magic values** in code. Colors + tokens come from one source of truth, enforced by
+  a lint rule. Fix a violation by reaching for the token, not by allowlisting.
+- **Refactors are not restyles.** Swapping inline values for primitives = zero visual change; prove it.
+
+## 6. Responsive (hard requirement)
+
+Every page/component renders correctly at every viewport. Mobile-first, fluid units (rem/%/vw/fr +
+flex/grid), not fixed px. No overflow/overlap/horizontal-scroll at any width. **Verify before "done"**
+at {{320 / 768 / 1024 / 1440}}px with the preview tooling — don't ask the user to check.
+
+## 7. Copy / content style
+
+{{Project voice in one or two rules, e.g.: no em-dashes in user-facing copy (reads AI-generated) —
+use a spaced hyphen or rephrase.}} Applies to all user-facing strings, emails, and marketing docs.
+
+## 8. Critical files — touch with care
+
+| File | Why critical |
+|---|---|
+| {{lib/constants or config}} | {{single source of X}} |
+| {{state machine / core}} | {{all logic lives here}} |
+| … | … |
+
+Maintain a **hot-files cheat-sheet** ([docs/HOT-FILES.md](docs/HOT-FILES.md)) mapping the most-read
+files' exports/shapes, linked from here so sessions read the map instead of re-opening full files.
+
+---
+
+## 9. Claude token & cost optimization
+
+These cut spend without cutting rigor. They compound — a long-running repo pays for them daily.
+
+**Right-size the model.** Default the project to a mid model in a committed `.claude/settings.json`
+(`"model": "sonnet"`); escalate per-session (`/model opus`) only for architecture, hard debugging,
+or subtle correctness. Routine turns (git, small edits, lookups) don't need the top tier.
+
+**Don't re-read what's already summarized.** Keep a hot-files cheat-sheet (§8) and a canonical
+SYSTEM.md so agents read one map, not thousands of lines of source every session. If a file is being
+opened dozens of times a week, that's a signal to summarize it, not to keep re-reading.
+
+**Delegate wide reads to subagents.** For "sweep many files to answer one question," spawn an Explore
+/ general-purpose subagent — it burns its own context and returns just the conclusion, keeping the
+main thread lean. Run independent searches in parallel in one message.
+
+**Compress the register.** A terse-output mode (e.g. the caveman plugin) drops filler/articles/
+pleasantries while keeping all technical substance and exact code/errors — ~75% fewer output tokens
+on chatty turns. Turn it OFF while debugging hard problems where nuance matters.
+
+**Persistent structure over re-derivation.** A code-graph tool (e.g. graphify) and a memory dir let
+agents query relationships and recall prior decisions instead of re-exploring. Rebuild the graph on a
+SessionStart hook so it's always current.
+
+**Use dedicated tools, not shell.** Prefer the file/search/edit tools over `cat`/`sed`/`grep` shells —
+cheaper, and they don't dump whole files into context. Read only the slice you need (offset/limit).
+
+**Act when you have enough.** Don't re-derive established facts, re-litigate settled decisions, or
+narrate options you won't take. Recommend, don't survey.
+
+**Scope tests + builds.** Run the quick verify (typecheck + lint + test) in the loop; run the full
+build only before push. Don't rebuild to check a type error.
+
+---
+
+## 10. Enforcing the norms (machine first, humans second)
+
+Conventions in a doc get ignored; put teeth where you can. Ranked by strength:
+
+**Machine-enforced (can't be skipped):**
+- **CI required check** — `{{VERIFY_COMMAND}}` (typecheck + lint + test + build) on every PR; deploy
+  only what passes. This is the backbone.
+- **Branch protection** on `{{PROD_BRANCH}}` — require PR + passing CI + review; block direct pushes
+  and force-pushes. Restrict who can run the promotion workflow.
+- **Custom lint rules** — encode house rules as ESLint rules (no-raw-hex, no-second-button, banned
+  imports) so violations fail CI, not code review.
+- **Committed `.claude/settings.json`** — model tier, enabled plugins, and SessionStart hooks travel
+  with the repo, so every contributor's agent starts configured the same way.
+- **Pre-commit hook** (optional) — run the quick verify locally so failures surface before push.
+- **CODEOWNERS** — require an owner's review on critical files/dirs.
+
+**Convention-enforced (needs buy-in, but make it easy):**
+- **This CLAUDE.md** — the contract. Agents read it every session; humans read it in the PR template.
+- **PR template with a Definition-of-Done checklist** — test added? docs updated? staging proof stated?
+  responsive verified? Reviewers refuse to approve unchecked boxes.
+- **Spec-folder workflow** — status = folder; a feature isn't "done" until its spec is in `shipped/`.
+- **Onboarding one-pager** — point new contributors (and their agents) at CLAUDE.md first.
+
+Rule of thumb: if a norm matters, try to make CI fail when it's broken. Everything that can be a lint
+rule or a required check should be. Reserve human review for judgment CI can't make.

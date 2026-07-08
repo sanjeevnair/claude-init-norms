@@ -1,0 +1,16 @@
+# Code owners — require review from the owning team on critical paths.
+# GitHub silently ignores unknown handles: the team @{{ORG}}/{{TEAM}} MUST exist in the org
+# (GitHub org -> Settings -> Teams) or these rules do nothing.
+# Enforced only when branch protection has "Require review from Code Owners" ON.
+
+# Default owner for everything.
+*                       @{{ORG}}/{{TEAM}}
+
+# Critical paths — fill with your single-source-of-truth files (config, routing, money, identity).
+# /lib/constants.ts     @{{ORG}}/{{TEAM}}
+# /lib/<state-machine>  @{{ORG}}/{{TEAM}}
+
+# The norms + pipelines themselves — changes here affect everyone.
+/.github/               @{{ORG}}/{{TEAM}}
+CLAUDE.md               @{{ORG}}/{{TEAM}}
+/docs/SYSTEM.md         @{{ORG}}/{{TEAM}}
