@@ -60,6 +60,36 @@ file sizes, and how you work. The point is the **mechanism** and that these habi
 long-running repo pays for them every single day.* The full playbook lives in §9 of the generated
 `CLAUDE.md`.
 
+## Advanced usage: large codebases
+
+On a big repo (or a monorepo), two habits dominate the bill: **re-reading source** and **dumping raw
+command output**. The companion skill **`init-norms-scale`** installs the counter-habit for each. Both
+lean on optional, user-installed tools — swap in any equivalent; keep the norm.
+
+- **Query a code-graph instead of re-reading files.** Build a persistent knowledge graph of the repo
+  once, rebuild it incrementally on a SessionStart hook, then answer "how does X work / what calls Y"
+  by *querying the graph* — not by opening thousands of lines each session. The graph's most-connected
+  "god nodes" also seed `docs/HOT-FILES.md` with the repo's real hot files.
+  (`graphify` is one such tool; the norm is what matters, not the tool.)
+- **Compress high-volume browsing output.** Wrap noisy, low-stakes commands (`git log`, `ls`, dep
+  installs, long greps) in an output-compressing CLI proxy so they return a fraction of the tokens.
+  Because such proxies are **lossy** (truncate / dedup / group), the rule is strict: **browsing only —
+  NEVER wrap diagnostics** (tests, migrations, deploys, stack traces, `git diff`/`git status` before a
+  commit), and never a global auto-rewrite hook. A lossy filter can eat the one line that is the
+  signal. (`rtk`, the Rust Token Killer, is one such tool.)
+
+Why it compounds at scale: a 2k-line core module is ~25k tokens; reopened a few times a day across a
+team, that's millions of tokens a week re-deriving what a graph query answers in a few hundred. The
+graph pays back its build cost within a day.
+
+Install the advanced skill the same way as init-norms (it's a sibling folder in this repo):
+```
+git clone https://github.com/sanjeevnair/claude-init-norms /tmp/claude-init-norms
+cp -r /tmp/claude-init-norms/init-norms-scale ~/.claude/skills/init-norms-scale   # or copy on Windows
+```
+Then, in a repo already set up with init-norms: *"Use init-norms-scale to add the large-codebase
+tooling."*
+
 ## Install
 
 Clone (or copy) this repo into your Claude Code skills directory as `init-norms`.
@@ -103,6 +133,8 @@ LICENSE             ← MIT
 scripts/setup.sh    ← safe scaffolder, macOS/Linux/WSL/Git Bash (no overwrite)
 scripts/setup.ps1   ← safe scaffolder, Windows PowerShell (identical behavior)
 templates/          ← everything it drops into a repo, all {{PLACEHOLDER}}-tokenized
+init-norms-scale/   ← OPTIONAL companion skill: advanced token tooling for large codebases
+                      (code-graph query workflow + compressed-output CLI proxy)
 ```
 
 ## Unfamiliar with a term?

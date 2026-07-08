@@ -124,7 +124,13 @@ on chatty turns. Turn it OFF while debugging hard problems where nuance matters.
 
 **Persistent structure over re-derivation.** A code-graph tool (e.g. graphify) and a memory dir let
 agents query relationships and recall prior decisions instead of re-exploring. Rebuild the graph on a
-SessionStart hook so it's always current.
+SessionStart hook so it's always current. On a large codebase this is the single biggest lever — see
+the advanced tier (init-norms-scale) for the graph-query-first workflow.
+
+**Compress high-volume browsing output.** An output-compressing CLI proxy (e.g. rtk) can cut noisy
+command output — `git log`, `ls`, dep installs, long greps — to a fraction of the tokens. It is lossy,
+so use it ONLY where completeness is irrelevant; NEVER on diagnostics (tests, migrations, deploys,
+stack traces, `git diff`/`git status` before a commit). Never a global auto-rewrite hook.
 
 **Use dedicated tools, not shell.** Prefer the file/search/edit tools over `cat`/`sed`/`grep` shells —
 cheaper, and they don't dump whole files into context. Read only the slice you need (offset/limit).

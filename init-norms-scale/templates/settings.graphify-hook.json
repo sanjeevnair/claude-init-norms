@@ -1,0 +1,15 @@
+{
+  "//": "MERGE this into the repo's .claude/settings.json — deep-merge hooks.SessionStart, don't replace the file. The command self-guards on graphify being installed and always exits 0, so a missing tool never blocks session start.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v graphify >/dev/null 2>&1 && graphify . --update --no-viz >/dev/null 2>&1 || true"
+          }
+        ]
+      }
+    ]
+  }
+}
