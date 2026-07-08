@@ -1,6 +1,6 @@
 ---
 name: init-norms
-description: Bootstrap a repository with SDLC norms + Claude Code config — staging-first branch discipline, a promotion gate, a test policy, a feature/BRD process, design-system + responsive rules, a docs-never-drift contract, a hot-files cheat-sheet, the Claude token/cost playbook, and the machine-enforcement scaffolding (CI required check, PR template, CODEOWNERS) that makes the norms bite. Use when the user wants to set up project norms, standardize a repo, add a CLAUDE.md + governance, onboard a new project to their standards, or says "init-norms", "set up norms", "scaffold standards", or "bootstrap this repo".
+description: Bootstrap a repository with SDLC norms + Claude Code config — branch discipline (branch model left to the user), a merge/release gate, a test policy, a feature/BRD process, design-system + responsive rules, a docs-never-drift contract, a hot-files cheat-sheet, the Claude token/cost playbook, and the machine-enforcement scaffolding (CI required check, PR template, CODEOWNERS) that makes the norms bite. Use when the user wants to set up project norms, standardize a repo, add a CLAUDE.md + governance, onboard a new project to their standards, or says "init-norms", "set up norms", "scaffold standards", or "bootstrap this repo".
 ---
 
 # init-norms
@@ -10,7 +10,7 @@ beats convention: anything that can be a lint rule or a required CI check SHOULD
 review for judgment CI can't make.
 
 ## What it drops in
-- `CLAUDE.md` — the norms contract agents read every session (branch discipline, promotion gate,
+- `CLAUDE.md` — the norms contract agents read every session (branch discipline, merge/release gate,
   test policy, feature process, design system, responsive, copy style, hot-files, token/cost playbook).
 - `.claude/settings.json` — project model tier (defaults to a mid model; escalate per-session).
 - `.github/workflows/ci.yml` — the required verify check.
@@ -39,26 +39,28 @@ Infer from the repo:
 - `{{PACKAGE_MANAGER}}` — lockfile (`pnpm-lock.yaml`→pnpm, `package-lock.json`→npm, `yarn.lock`→yarn).
 - `{{VERIFY_SCRIPT}}` — a `verify` script in package.json; if absent, propose one (typecheck + lint +
   test + build) and add it. That command IS the gate.
-- `{{DEV_BRANCH}}` / `{{PROD_BRANCH}}` — from `git branch` + the default branch (confirm; typical is
-  a staging→main split).
+- `{{PROD_BRANCH}}` — the release branch that ships to production (usually the default branch; confirm).
+- `{{DEV_BRANCH}}` — only if the user runs a dev/staging branch. Ask which branch model they want
+  (trunk-based, feature-branch, or a dev→prod split); don't assume a staging split. If single-branch,
+  drop `{{DEV_BRANCH}}` / `{{PROMOTE_COMMAND}}` and delete the promotion note in §1.
 - Critical-files table + `docs/HOT-FILES.md` — from the actual code (biggest / most-imported modules).
 
 Ask the user (can't infer):
 - `{{ORG}}` and `{{TEAM}}` — the GitHub org + the team slug that owns reviews (CODEOWNERS).
-- `{{PROMOTE_COMMAND}}` — how prod deploys (workflow dispatch? manual? none yet?).
-- Which sections don't apply (delete them — e.g. no design system, no promotion gate, single-branch repo).
+- `{{PROMOTE_COMMAND}}` — only if they run a promotion workflow (workflow dispatch? manual? none).
+- Which sections don't apply (delete them — e.g. no design system, single-branch repo, no promotion).
 
 ### 3. Wire the verify script
 If no `verify` script exists, add one so the CI check and the PR checklist reference the same command.
 
 ### 4. Tell the user the manual GitHub steps (can't be scripted)
 - Create the `@{{ORG}}/{{TEAM}}` team, or CODEOWNERS is silently ignored.
-- Branch protection on the prod branch: require PR + CI status check + review + **code-owner review**,
-  block force-push, restrict who can run the promotion workflow.
+- Branch protection on the release branch: require PR + CI status check + review + **code-owner
+  review**, block force-push. If they run a promotion workflow, restrict who can trigger it.
 
 ### 5. Commit
-Follow the repo's branch discipline (start on the dev branch). Commit the scaffold; don't push to
-prod directly.
+Follow the repo's branch model (feature/dev branch, PR to the release branch). Commit the scaffold;
+don't push to the release branch directly.
 
 ## Notes
 - Two layers: this skill is the **per-repo** layer. The **global** layer (`~/.claude/CLAUDE.md`,

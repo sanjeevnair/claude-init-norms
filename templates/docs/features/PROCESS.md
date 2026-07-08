@@ -11,12 +11,13 @@ regression test, dep bumps, docs) skip the spec but still need a test when behav
      collection/contract) → complete a design gate first: a sequence/data-flow diagram + the
      integration contract (shape/auth/lifetime of what crosses the boundary). Get it approved before code.
 3. **Approval**, then `git mv` the folder to `building/`. Build **test-first** (red → green → refactor).
-4. **Verify** locally (`{{VERIFY_SCRIPT}}`) + exercise the real flow. Commit staging-first.
+4. **Verify** locally (`{{VERIFY_SCRIPT}}`) + exercise the real flow. Commit on a feature/dev branch,
+   PR to the release branch.
 5. **Definition of Done** → `git mv` to `shipped/`:
    - Tests added + passing; `{{VERIFY_SCRIPT}}` green.
    - `docs/SYSTEM.md` + hot-files updated in the same change.
    - Responsive verified (if UI).
-   - Staging proof stated (if user-facing).
+   - Real-flow proof stated (if user-facing) — on staging if you have one, else locally.
 
 **Status = the stage folder:** `proposed/ → building/ → shipped/ (→ archived/)`.
 BRD is source of truth; the roadmap is just the dashboard.

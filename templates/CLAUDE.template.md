@@ -18,26 +18,26 @@ service, or flow — docs must never drift from code (enforced in Definition of 
 
 ---
 
-## 1. Branch discipline — {{DEV_BRANCH}}-first (non-negotiable)
+## 1. Branch discipline
 
-**All development starts on `{{DEV_BRANCH}}`. Always.** `{{PROD_BRANCH}}` is production, changed
-ONLY by the promotion workflow — never hand-merged, never force-pushed.
+Pick the branch model that fits the project (trunk-based, feature-branch, or a dev→prod split) and
+write it here. Whatever you pick, these hold:
+- **Protect the release branch.** The branch that ships to production (`{{PROD_BRANCH}}`) changes only
+  through a reviewed, CI-passing PR — never a direct push, never a force-push.
+- **Don't develop on the release branch.** Work on a feature/dev branch, open a PR, merge when green.
+- **Gate on CI, not vibes.** Nothing merges to the release branch that doesn't pass the verify check.
 
-For ANY code change:
-1. Start on `{{DEV_BRANCH}}` (`git checkout {{DEV_BRANCH}} && git pull`).
-2. Commit + push → auto-deploys to staging + CI runs. Verify on the deployed staging URL.
-3. Promote to prod only via the workflow (`{{PROMOTE_COMMAND}}`) — and only after the promotion gate passes.
-4. Env-divergent config (`{{CONFIG_FILE}}`) is per-branch by design; never merge it across branches.
+{{Optional — if you run a staging→prod (or dev→main) split with a promotion workflow, document it
+here: how to promote (`{{PROMOTE_COMMAND}}`), and any per-branch config that must NOT be merged across
+branches. If you're single-branch / trunk-based, delete this note.}}
 
-Only exception: a docs-only change may be mirrored to both branches directly.
+## 2. Merge / release gate
 
-## 2. Promotion gate (non-negotiable)
-
-Mock-green ≠ works. Before promoting, every feature that changes user-facing behavior needs BOTH:
+Mock-green ≠ works. Before a user-facing change lands on the release branch, it needs BOTH:
 1. **An integration/e2e test** driving the real flow against a real (emulated) backend — real writes, real session, real handlers.
-2. **A real proof on the DEPLOYED staging env** — drive the actual flow on the live commit and confirm the *observable* outcome (row written, page rendered, email delivered). Don't infer from unit-green.
+2. **A real proof it works** — drive the actual flow and confirm the *observable* outcome (row written, page rendered, email delivered), not just unit-green. If you have a deployed staging env, prove it there on the live commit; otherwise prove it locally end-to-end.
 
-State the staging proof (what you drove + observed) before promoting. Genuinely-unreachable paths
+State the proof (what you drove + observed) in the PR. Genuinely-unreachable paths
 (admin SSO, real-inbox clicks) → cover with the e2e and say so; never silently skip.
 
 ## 3. Testing policy
@@ -64,8 +64,8 @@ bug + its regression test, dep bumps, docs) skip the spec but still need a test 
    options. Flag cross-cutting work (touches another feature's data/auth, new dependency, new contract)
    and complete a design/integration-contract gate before any code.
 3. **Approval**, then build **test-first** (red → green → refactor).
-4. **Verify** locally + exercise the real flow, commit staging-first.
-5. **Definition of Done** before "complete": tests pass, docs updated, staging proof stated.
+4. **Verify** locally + exercise the real flow, commit on a feature/dev branch (never straight to the release branch).
+5. **Definition of Done** before "complete": tests pass, docs updated, real-flow proof stated.
 
 **Status = the folder.** `proposed/ → building/ → shipped/ (→ archived/)`. Spec is source of
 truth; the roadmap is just the dashboard.
@@ -145,7 +145,7 @@ Conventions in a doc get ignored; put teeth where you can. Ranked by strength:
 - **CI required check** — `{{VERIFY_COMMAND}}` (typecheck + lint + test + build) on every PR; deploy
   only what passes. This is the backbone.
 - **Branch protection** on `{{PROD_BRANCH}}` — require PR + passing CI + review; block direct pushes
-  and force-pushes. Restrict who can run the promotion workflow.
+  and force-pushes. If you run a promotion workflow, restrict who can trigger it.
 - **Custom lint rules** — encode house rules as ESLint rules (no-raw-hex, no-second-button, banned
   imports) so violations fail CI, not code review.
 - **Committed `.claude/settings.json`** — model tier, enabled plugins, and SessionStart hooks travel
@@ -155,7 +155,7 @@ Conventions in a doc get ignored; put teeth where you can. Ranked by strength:
 
 **Convention-enforced (needs buy-in, but make it easy):**
 - **This CLAUDE.md** — the contract. Agents read it every session; humans read it in the PR template.
-- **PR template with a Definition-of-Done checklist** — test added? docs updated? staging proof stated?
+- **PR template with a Definition-of-Done checklist** — test added? docs updated? real-flow proof stated?
   responsive verified? Reviewers refuse to approve unchecked boxes.
 - **Spec-folder workflow** — status = folder; a feature isn't "done" until its spec is in `shipped/`.
 - **Onboarding one-pager** — point new contributors (and their agents) at CLAUDE.md first.

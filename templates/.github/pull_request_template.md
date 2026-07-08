@@ -14,10 +14,11 @@
 - [ ] **Copy style** followed (if user-facing copy changed).
 - [ ] **Spec advanced** — moved to the right stage folder (if a substantial feature).
 
-## Staging proof (required for anything user-facing before promotion)
+## Real-flow proof (required for anything user-facing)
 
 <!--
-Mock-green != works. State what you drove on the DEPLOYED staging env and the observable outcome.
+Mock-green != works. State what you drove end-to-end and the observable outcome. If you have a
+deployed staging env, prove it there on the live commit; otherwise prove it locally.
 Genuinely-unreachable path? Say which e2e covers it instead.
 -->
 

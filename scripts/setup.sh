@@ -39,5 +39,5 @@ echo
 echo "NEXT (fill placeholders + wire enforcement):"
 echo "  1. Replace every {{PLACEHOLDER}} — incl. {{ORG}}/{{TEAM}} in CODEOWNERS."
 echo "  2. Ensure a 'verify' script exists (typecheck + lint + test + build) so CI + PR checklist match."
-echo "  3. GitHub UI: create the @{{ORG}}/{{TEAM}} team, then branch-protect the prod branch"
-echo "     (require CI + review + code-owner review, block force-push, restrict promotion)."
+echo "  3. GitHub UI: create the @{{ORG}}/{{TEAM}} team, then branch-protect the release branch"
+echo "     (require CI + review + code-owner review, block force-push; restrict promotion if you run one)."
