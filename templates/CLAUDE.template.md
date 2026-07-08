@@ -106,9 +106,20 @@ files' exports/shapes, linked from here so sessions read the map instead of re-o
 
 These cut spend without cutting rigor. They compound — a long-running repo pays for them daily.
 
-**Right-size the model.** Default the project to a mid model in a committed `.claude/settings.json`
-(`"model": "sonnet"`); escalate per-session (`/model opus`) only for architecture, hard debugging,
-or subtle correctness. Routine turns (git, small edits, lookups) don't need the top tier.
+**Right-size the model — top tier for hard thinking, mid tier for the rest.** Default the project to a
+mid model in a committed `.claude/settings.json` (`"model": "sonnet"`) and escalate per-session
+(`/model opus`) ONLY for the hard-task categories below. The top tier is ~5× the per-token cost, so
+running it on routine coding is money lit on fire.
+
+| Use the **top tier** (Opus) for | Use the **mid tier** (Sonnet, default) for |
+|---|---|
+| Architecture + system design | Feature coding to an agreed design |
+| Hard debugging / subtle correctness | Routine edits, refactors, renames |
+| Security-sensitive or concurrency logic | Tests, boilerplate, config |
+| Ambiguous specs / trade-off calls | Git, lookups, docs, small fixes |
+
+Rule of thumb: if the task is "decide *what* to build or *why* it's wrong," reach for Opus; if it's
+"build the thing we already decided," Sonnet. Drop back to the default the moment the hard part is done.
 
 **Don't re-read what's already summarized.** Keep a hot-files cheat-sheet (§8) and a canonical
 SYSTEM.md so agents read one map, not thousands of lines of source every session. If a file is being

@@ -23,9 +23,9 @@ not by opening files.**
 
 ### Compress high-volume command output — browsing ONLY
 
-An output-compressing CLI proxy (`{{OUTPUT_PROXY}}`, e.g. rtk) can cut noisy command output to a
-fraction of the tokens. It is **lossy** (truncate / dedup / group), so it is safe on high-volume
-low-stakes browsing and dangerous on anything you reason about.
+An output-compressing CLI proxy (`{{OUTPUT_PROXY}}`, e.g. [rtk](https://github.com/rtk-ai/rtk)) can
+cut noisy command output to a fraction of the tokens. It is **lossy** (truncate / dedup / group), so
+it is safe on high-volume low-stakes browsing and dangerous on anything you reason about.
 
 - **DO wrap** (completeness irrelevant): `git log`, `ls`, `tree`, dependency installs, long `grep`/`rg`
   sweeps you're skimming.

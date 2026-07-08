@@ -51,7 +51,7 @@ Four everyday habits quietly run the meter up. This skill installs the counter-h
 | The challenge (what runs the meter up) | What init-norms installs | Rough saving on the affected work* |
 |---|---|---|
 | **Re-reading big files.** An agent re-opens the same 800-line module (~10k tokens) to answer "what does this export?" — 30×/week = ~300k tokens on *one* file. | `docs/HOT-FILES.md` cheat-sheet + a canonical `SYSTEM.md`: agents read a ~40-line map (~600 tokens) instead of the file. | ~**94%** fewer tokens on those lookups (600 vs 10k per read). |
-| **Top-tier model on routine turns.** Running the most expensive model for `git status`, a one-line edit, or a lookup. | `.claude/settings.json` pins a **mid-tier** default; you escalate per-session only for hard work. | Mid tier is ~**5× cheaper per token** than top tier — so routine turns cost ~1/5. |
+| **Top-tier model on routine turns.** Running the most expensive model for `git status`, a one-line edit, or a lookup. | `.claude/settings.json` pins a **mid-tier** default (Sonnet); you escalate to the top tier (Opus) per-session only for architecture, design, and hard debugging — not routine coding. | Mid tier is ~**5× cheaper per token** than top tier — so routine turns cost ~1/5. |
 | **Verbose output.** Chatty prose burns output tokens (the 5×-priced side) with no added correctness. | The token/cost playbook points at a terse-output mode (e.g. the caveman plugin) for chatty turns. | ~**75%** fewer *output* tokens on those turns (technical content unchanged). |
 | **Wide reads bloat the main thread.** Sweeping 40 files (~400k tokens) to answer one question leaves all 400k in context, inflating every later turn. | The playbook delegates wide reads to a **subagent** that returns just the ~500-token conclusion. | Main-thread context stays lean; the 400k never compounds across the rest of the session. |
 
@@ -76,7 +76,7 @@ lean on optional, user-installed tools — swap in any equivalent; keep the norm
   Because such proxies are **lossy** (truncate / dedup / group), the rule is strict: **browsing only —
   NEVER wrap diagnostics** (tests, migrations, deploys, stack traces, `git diff`/`git status` before a
   commit), and never a global auto-rewrite hook. A lossy filter can eat the one line that is the
-  signal. (`rtk`, the Rust Token Killer, is one such tool.)
+  signal. ([rtk](https://github.com/rtk-ai/rtk), the Rust Token Killer, is one such tool.)
 
 Why it compounds at scale: a 2k-line core module is ~25k tokens; reopened a few times a day across a
 team, that's millions of tokens a week re-deriving what a graph query answers in a few hundred. The

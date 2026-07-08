@@ -13,7 +13,7 @@ spend. It assumes the base norms are already in place (run `init-norms` first) a
    querying the graph — not by opening thousands of lines every session. (`graphify` is one such tool.)
 2. **Compress high-volume command output.** Wrap noisy, low-stakes browsing commands in an
    output-compressing CLI proxy so `git log`, `ls`, dep installs, and long greps return a fraction of
-   the tokens. (`rtk`, the Rust Token Killer, is one such tool.)
+   the tokens. ([rtk](https://github.com/rtk-ai/rtk), the Rust Token Killer, is one such tool.)
 
 Both tools are **optional** and user-installed — if they're absent, install-or-skip and say so; the
 base init-norms token playbook still stands without them.
